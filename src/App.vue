@@ -21,10 +21,10 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, computed, onMounted, watch } from "vue";
-import TodoHeader from "./components/TodoHeader.vue";
-import TodoContent from "./components/TodoContent/index.vue";
-import TodoFooter from "./components/TodoFooter.vue";
+import { ref, computed, onMounted, watch, onUnmounted } from 'vue';
+import TodoHeader from './components/TodoHeader.vue';
+import TodoContent from './components/TodoContent/index.vue';
+import TodoFooter from './components/TodoFooter.vue';
 
 export interface Todo {
   title: string;
@@ -32,20 +32,20 @@ export interface Todo {
   is_completed: boolean;
 }
 
-export type Filtermode = "active" | "completed" | "all";
+export type Filtermode = 'active' | 'completed' | 'all';
 
 // define reactive state (có thể dùng hàm reactive hoặc ref, sự khác nhau => đọc thêm docs)
 const todos = ref<Todo[]>([]);
-const filter_mode = ref<Filtermode>("all");
+const filter_mode = ref<Filtermode>('all');
 
 // để dùng computed value, dùng hàm built-in của Vue: computed
 const filtered_todos = computed(() => {
   switch (filter_mode.value) {
-    case "all":
+    case 'all':
       return todos.value as Todo[];
-    case "active":
+    case 'active':
       return todos.value.filter((t) => !t.is_completed);
-    case "completed":
+    case 'completed':
       return todos.value.filter((t) => t.is_completed);
 
     default:
@@ -107,7 +107,7 @@ function editTodo(id: number, title: string) {
 // life cycle hooks
 onMounted(() => {
   // Lấy những todos được lưu trong localstorage ra
-  const storedTodos = localStorage.getItem("todos-mvc");
+  const storedTodos = localStorage.getItem('todos-mvc');
   todos.value = storedTodos ? JSON.parse(storedTodos) : [];
 });
 
@@ -115,7 +115,7 @@ onMounted(() => {
 watch(
   todos,
   (new_todos) => {
-    localStorage.setItem("todos-mvc", JSON.stringify(new_todos));
+    localStorage.setItem('todos-mvc', JSON.stringify(new_todos));
   },
   { deep: true }
 );
@@ -129,7 +129,7 @@ watch(
 }
 
 body {
-  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
   min-height: 100vh;
   background-color: #f5f5f5;
   .app {
