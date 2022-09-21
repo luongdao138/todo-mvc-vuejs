@@ -34,64 +34,61 @@
   </div>
 </template>
 
-<script lang="ts">
-import { Todo } from '@/App.vue';
-import { defineComponent, nextTick, PropType } from 'vue';
+<script lang="ts" setup>
+import { Todo } from "@/App.vue";
+import { defineProps, defineEmits, nextTick, PropType, ref } from "vue";
 
-export default defineComponent({
-  name: 'TodoItem',
-  $refs: {
-    input: HTMLInputElement,
-  },
-  emits: ['toggleTodoCompleted', 'editTodo'],
-  props: {
-    todo: {
-      type: Object as PropType<Todo>,
-      required: true,
-    },
-    deleteTodo: {
-      type: Function as PropType<(id: number) => void>,
-      required: true,
-    },
-  },
-  data() {
-    return {
-      open_edit: false,
-      title: this.todo.title,
-    };
-  },
-  methods: {
-    handleDoubleClick() {
-      this.open_edit = true;
-      nextTick(() => {
-        (this.$refs.input as any)?.focus();
-        const handleClickOutside = (e: any) => {
-          if (!(this.$refs.input as any)?.contains(e.target)) {
-            this.open_edit = false;
-            this.handleCloseEdit();
-            nextTick(() => {
-              document.removeEventListener('click', handleClickOutside);
-            });
-          }
-        };
-        document.addEventListener('click', handleClickOutside);
-      });
-    },
-    handleCloseEdit() {
-      this.open_edit = false;
-      if (!this.title) {
-        this.deleteTodo(this.todo.id);
-      } else {
-        this.$emit('editTodo', this.todo.id, this.title);
+interface Props {
+  todo: Todo;
+  deleteTodo: (id: number) => void;
+}
+
+// received props
+const { deleteTodo, todo } = defineProps<Props>();
+
+// reactive state
+const open_edit = ref<boolean>(false);
+const title = ref<string>(todo.title);
+
+// emits
+const emit = defineEmits<{
+  (e: "editTodo", id: number, title: string): void;
+  (e: "toggleTodoCompleted", id: number): void;
+}>();
+
+// template ref
+const input = ref<HTMLInputElement | null>(null);
+
+// methods
+function handleDoubleClick() {
+  open_edit.value = true;
+  nextTick(() => {
+    input.value?.focus();
+    const handleClickOutside = (e: any) => {
+      if (!input.value?.contains(e.target)) {
+        open_edit.value = false;
+        handleCloseEdit();
+        nextTick(() => {
+          document.removeEventListener("click", handleClickOutside);
+        });
       }
-    },
-  },
-  mounted() {},
-});
+    };
+    document.addEventListener("click", handleClickOutside);
+  });
+}
+
+function handleCloseEdit() {
+  open_edit.value = false;
+  if (!title.value) {
+    deleteTodo(todo.id);
+  } else {
+    emit("editTodo", todo.id, title.value);
+  }
+}
 </script>
 
 <style scoped lang="scss">
-input[type='checkbox'] {
+input[type="checkbox"] {
   margin-right: 1rem;
 }
 

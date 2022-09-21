@@ -20,11 +20,11 @@
   </div>
 </template>
 
-<script lang="ts">
-import { defineComponent } from 'vue';
-import TodoHeader from './components/TodoHeader.vue';
-import TodoContent from './components/TodoContent/index.vue';
-import TodoFooter from './components/TodoFooter.vue';
+<script lang="ts" setup>
+import { ref, computed, onMounted, watch } from "vue";
+import TodoHeader from "./components/TodoHeader.vue";
+import TodoContent from "./components/TodoContent/index.vue";
+import TodoFooter from "./components/TodoFooter.vue";
 
 export interface Todo {
   title: string;
@@ -32,103 +32,93 @@ export interface Todo {
   is_completed: boolean;
 }
 
-export type Filtermode = 'active' | 'completed' | 'all';
+export type Filtermode = "active" | "completed" | "all";
 
-interface AppState {
-  todos: Todo[];
-  filter_mode: Filtermode;
+// define reactive state (có thể dùng hàm reactive hoặc ref, sự khác nhau => đọc thêm docs)
+const todos = ref<Todo[]>([]);
+const filter_mode = ref<Filtermode>("all");
+
+// để dùng computed value, dùng hàm built-in của Vue: computed
+const filtered_todos = computed(() => {
+  switch (filter_mode.value) {
+    case "all":
+      return todos.value as Todo[];
+    case "active":
+      return todos.value.filter((t) => !t.is_completed);
+    case "completed":
+      return todos.value.filter((t) => t.is_completed);
+
+    default:
+      return [];
+  }
+});
+
+const has_completed = computed(() => todos.value.some((t) => t.is_completed));
+const has_active = computed(() => todos.value.some((t) => !t.is_completed));
+const all_completed = computed(() => todos.value.every((t) => t.is_completed));
+const is_empty = computed(() => todos.value.length === 0);
+const items_left = computed(
+  () => todos.value.filter((t) => !t.is_completed).length
+);
+
+// Các function được định nghĩa ở top level chính là các methods trong options API
+function handleChangeFilterMode(value: Filtermode) {
+  filter_mode.value = value;
 }
 
-export default defineComponent({
-  name: 'App',
-  components: { TodoHeader, TodoContent, TodoFooter },
-  computed: {
-    items_left(): number {
-      return this.todos.filter((t) => !t.is_completed).length;
-    },
-    filtered_todos(): Todo[] {
-      switch (this.filter_mode) {
-        case 'all':
-          return this.todos;
-        case 'active':
-          return this.todos.filter((t) => !t.is_completed);
-        case 'completed':
-          return this.todos.filter((t) => t.is_completed);
+function clearCompletedTodo() {
+  todos.value = todos.value.filter((t) => !t.is_completed);
+}
 
-        default:
-          return [];
-      }
-    },
-    has_completed(): boolean {
-      return this.todos.some((t) => t.is_completed);
-    },
-    has_active(): boolean {
-      return this.todos.some((t) => !t.is_completed);
-    },
-    all_completed(): boolean {
-      return this.todos.every((t) => t.is_completed);
-    },
-    is_empty(): boolean {
-      return this.todos.length === 0;
-    },
-  },
-  data(): AppState {
-    return {
-      todos: [],
-      filter_mode: 'all',
-    };
-  },
-  methods: {
-    handleChangeFilterMode(value: Filtermode) {
-      this.filter_mode = value;
-    },
-    clearCompletedTodo() {
-      this.todos = this.todos.filter((t) => !t.is_completed);
-    },
-    deleteTodo(id: number) {
-      this.todos = this.todos.filter((t) => t.id !== id);
-    },
-    addNewTodo(title: string) {
-      const newTodo: Todo = {
-        id: new Date().getTime(),
-        title,
-        is_completed: false,
-      };
+function deleteTodo(id: number) {
+  todos.value = todos.value.filter((t) => t.id !== id);
+}
 
-      this.todos.push(newTodo);
-    },
-    toggleTodoCompleted(id: number) {
-      this.todos = this.todos.map((t) =>
-        t.id === id ? { ...t, is_completed: !t.is_completed } : t
-      );
-    },
-    toggleCheckAll() {
-      if (this.has_active) {
-        this.todos = this.todos.map((t) => ({ ...t, is_completed: true }));
-      } else {
-        this.todos = this.todos.map((t) => ({ ...t, is_completed: false }));
-      }
-    },
-    editTodo(id: number, title: string) {
-      this.todos = this.todos.map((t) =>
-        t.id === id ? { ...t, title: title } : t
-      );
-    },
-  },
-  mounted() {
-    // Lấy những todos được lưu trong localstorage ra
-    const storedTodos = localStorage.getItem('todos-mvc');
-    this.todos = storedTodos ? JSON.parse(storedTodos) : [];
-  },
-  watch: {
-    todos: {
-      handler(newValue: Todo[]) {
-        localStorage.setItem('todos-mvc', JSON.stringify(newValue));
-      },
-      deep: true,
-    },
-  },
+function addNewTodo(title: string) {
+  const newTodo: Todo = {
+    id: new Date().getTime(),
+    title,
+    is_completed: false,
+  };
+
+  todos.value.push(newTodo);
+}
+
+function toggleTodoCompleted(id: number) {
+  todos.value = todos.value.map((t) =>
+    t.id === id ? { ...t, is_completed: !t.is_completed } : t
+  );
+}
+
+function toggleCheckAll() {
+  if (has_active.value) {
+    todos.value = todos.value.map((t) => ({ ...t, is_completed: true }));
+  } else {
+    todos.value = todos.value.map((t) => ({ ...t, is_completed: false }));
+  }
+}
+
+function editTodo(id: number, title: string) {
+  todos.value = todos.value.map((t) =>
+    t.id === id ? { ...t, title: title } : t
+  );
+}
+
+// life cycle hooks
+onMounted(() => {
+  // Lấy những todos được lưu trong localstorage ra
+  const storedTodos = localStorage.getItem("todos-mvc");
+  todos.value = storedTodos ? JSON.parse(storedTodos) : [];
 });
+
+// watchers
+watch(
+  todos,
+  (new_todos) => {
+    localStorage.setItem("todos-mvc", JSON.stringify(new_todos));
+  },
+  { deep: true }
+);
 </script>
 
 <style lang="scss">
@@ -139,7 +129,7 @@ export default defineComponent({
 }
 
 body {
-  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
   min-height: 100vh;
   background-color: #f5f5f5;
   .app {

@@ -1,7 +1,7 @@
 <template>
   <div class="todo-filter">
     <p class="item-left">
-      {{ items_left }} {{ items_left > 1 ? 'items' : 'item' }} left
+      {{ items_left }} {{ items_left > 1 ? "items" : "item" }} left
     </p>
     <div class="actions">
       <button
@@ -23,36 +23,25 @@
   </div>
 </template>
 
-<script lang="ts">
-import { Filtermode } from '@/App.vue';
-import { defineComponent, PropType } from 'vue';
+<script lang="ts" setup>
+import { Filtermode } from "@/App.vue";
+import { defineProps, reactive } from "vue";
 
-export default defineComponent({
-  name: 'TodoFilter',
-  data() {
-    return {
-      filter_options: [
-        { label: 'All', value: 'all' },
-        { label: 'Active', value: 'active' },
-        { label: 'Completed', value: 'completed' },
-      ],
-    };
-  },
-  props: {
-    items_left: {
-      type: Number,
-      required: true,
-    },
-    has_completed: {
-      type: Boolean,
-      required: true,
-    },
-    filter_mode: {
-      type: String as PropType<Filtermode>,
-      required: true,
-    },
-  },
-});
+// reactive state
+const filter_options = reactive([
+  { label: "All", value: "all" },
+  { label: "Active", value: "active" },
+  { label: "Completed", value: "completed" },
+]);
+
+interface Props {
+  items_left: number;
+  filter_mode: Filtermode;
+  has_completed: boolean;
+}
+
+// props
+const { filter_mode, has_completed, items_left } = defineProps<Props>();
 </script>
 
 <style scoped lang="scss">

@@ -4,30 +4,29 @@
     :key="todo.id"
     :todo="todo"
     :delete-todo="deleteTodo"
-    @toggle-todo-completed="(id) => $emit('toggleTodoCompleted', id)"
-    @edit-todo="(id, title) => $emit('editTodo', id, title)"
+    @toggle-todo-completed="(id: number) => $emit('toggleTodoCompleted', id)"
+    @edit-todo="(id: number, title: string) => $emit('editTodo', id, title)"
   />
 </template>
 
-<script lang="ts">
-import { Todo } from '../../App.vue';
-import { defineComponent, PropType } from 'vue';
-import TodoItem from './TodoItem.vue';
-export default defineComponent({
-  name: 'TodoList',
-  emits: ['toggleTodoCompleted', 'editTodo'],
-  components: { TodoItem },
-  props: {
-    todos: {
-      type: Array as PropType<Todo[]>,
-      required: true,
-    },
-    deleteTodo: {
-      type: Function as PropType<(id: number) => void>,
-      required: true,
-    },
+<script lang="ts" setup>
+import { Todo } from "../../App.vue";
+import { PropType, defineProps } from "vue";
+import TodoItem from "./TodoItem.vue";
+
+defineProps({
+  todos: {
+    type: Array as PropType<Todo[]>,
+    required: true,
+  },
+  deleteTodo: {
+    type: Function as PropType<(id: number) => void>,
+    required: true,
   },
 });
+
+// emits
+defineEmits(["toggleTodoCompleted", "editTodo"]);
 </script>
 
 <style></style>

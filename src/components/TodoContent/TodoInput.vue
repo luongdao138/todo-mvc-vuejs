@@ -16,39 +16,38 @@
   </div>
 </template>
 
-<script lang="ts" scoped>
-import { defineComponent } from 'vue';
+<script lang="ts" setup>
+import { defineProps, defineEmits, ref, onMounted } from "vue";
 
-export default defineComponent({
-  name: 'TodoSearch',
-  props: {
-    all_completed: {
-      type: Boolean,
-      required: true,
-    },
-    is_empty: {
-      type: Boolean,
-      required: true,
-    },
-  },
-  data() {
-    return {
-      title: '',
-    };
-  },
-  methods: {
-    handleAddNewTodo() {
-      if (!this.title) return;
+interface Props {
+  all_completed: boolean;
+  is_empty: boolean;
+}
 
-      console.log({ title: this.title });
+// reactive state
+const title = ref<string>("");
 
-      this.$emit('add-new-todo', this.title);
-      this.title = '';
-    },
-  },
-  mounted() {
-    (this.$refs.input as any).focus();
-  },
+// props
+const { all_completed, is_empty } = defineProps<Props>();
+
+// refs
+const input = ref<HTMLInputElement | null>(null);
+
+// emits
+const emit = defineEmits<{
+  (e: "add-new-todo", title: string): void;
+}>();
+
+// methods
+function handleAddNewTodo() {
+  if (!title.value) return;
+
+  emit("add-new-todo", title.value);
+  title.value = "";
+}
+
+onMounted(() => {
+  input.value?.focus();
 });
 </script>
 
@@ -60,11 +59,11 @@ export default defineComponent({
   background: rgba(0, 0, 0, 0.003);
   box-shadow: inset 0 -2px 1px rgb(0 0 0 / 3%);
   align-items: center;
-  input[type='checkbox'] {
+  input[type="checkbox"] {
     margin-right: 1rem;
   }
 
-  input[type='text'] {
+  input[type="text"] {
     outline: none;
     height: 100%;
     line-height: 1.4em;

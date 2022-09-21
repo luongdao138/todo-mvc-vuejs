@@ -24,44 +24,41 @@
   </div>
 </template>
 
-<script lang="ts">
-import TodoInput from './TodoInput.vue';
-import TodoList from './TodoList.vue';
-import TodoFilter from './TodoFilter.vue';
-import { defineComponent, PropType } from 'vue';
-import { Todo, Filtermode } from '@/App.vue';
-export default defineComponent({
-  name: 'TodoContent',
-  components: { TodoInput, TodoList, TodoFilter },
-  props: {
-    todos: {
-      type: Array as PropType<Todo[]>,
-      required: true,
-    },
-    items_left: {
-      type: Number,
-      required: true,
-    },
-    filter_mode: {
-      type: String as PropType<Filtermode>,
-      required: true,
-    },
-    has_completed: {
-      type: Boolean,
-      required: true,
-    },
-    all_completed: {
-      type: Boolean,
-      required: true,
-    },
-    deleteTodo: {
-      required: true,
-      type: Function as PropType<(id: number) => void>,
-    },
-    is_empty: {
-      required: true,
-      type: Boolean,
-    },
+<script lang="ts" setup>
+import TodoInput from "./TodoInput.vue";
+import TodoList from "./TodoList.vue";
+import TodoFilter from "./TodoFilter.vue";
+import { PropType, defineProps } from "vue";
+import { Todo, Filtermode } from "@/App.vue";
+
+defineProps({
+  todos: {
+    type: Array as PropType<Todo[]>,
+    required: true,
+  },
+  items_left: {
+    type: Number,
+    required: true,
+  },
+  filter_mode: {
+    type: String as PropType<Filtermode>,
+    required: true,
+  },
+  has_completed: {
+    type: Boolean,
+    required: true,
+  },
+  all_completed: {
+    type: Boolean,
+    required: true,
+  },
+  deleteTodo: {
+    required: true,
+    type: Function as PropType<(id: number) => void>,
+  },
+  is_empty: {
+    required: true,
+    type: Boolean,
   },
 });
 </script>
